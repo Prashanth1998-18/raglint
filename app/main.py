@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -15,6 +16,14 @@ from app.routers.upload import router as upload_router
 
 
 logger = logging.getLogger(__name__)
+
+
+def _env_flag(name: str, *, default: bool = False) -> bool:
+    """Parse a boolean-like environment variable with a safe default."""
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
 def create_app() -> FastAPI:
@@ -30,6 +39,7 @@ def create_app() -> FastAPI:
     app.state.session_api_keys = {}
     app.state.session_reports = {}
     app.state.analysis_jobs = {}
+    app.state.show_samples = _env_flag("RAGLINT_SHOW_SAMPLES", default=False)
 
     @app.exception_handler(RAGLintError)
     async def raglint_error_handler(request: Request, exc: RAGLintError) -> Response:
