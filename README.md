@@ -2,9 +2,18 @@
 
 RAGLint -- Audit your document corpus before it enters your RAG pipeline.
 
-RAGLint is a FastAPI application for reviewing document corpora before they are indexed for retrieval-augmented generation. It helps teams catch duplication, stale content, contradictions, weak metadata, and ROT before those issues become retrieval noise or model confusion in production.
+RAGLint is a FastAPI application for reviewing document corpora before they are indexed for retrieval-augmented generation. It helps teams catch duplication, stale content, contradictions, weak metadata, and ROT before those issues become retrieval noise or model confusion in production. Try it live at [raglint.vercel.app](https://raglint.vercel.app).
 
-<!-- Screenshot placeholder: add a screenshot of the final report dashboard here. -->
+## Screenshots
+
+### Upload your documents
+![Upload Page](<screenshots/Upload Page.jpg>)
+
+### Real-time analysis progress
+![Analyzing Page](<screenshots/Analyzing Page.jpg>)
+
+### Health score dashboard
+![Report Dashboard](<screenshots/Report Page.jpg>)
 
 ## Quick Start
 
