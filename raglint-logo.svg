@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" fill="none">
+  <!-- Icon: stylized document with checkmark/lint scan lines -->
+  <rect x="4" y="4" width="42" height="52" rx="6" fill="#0d1117" stroke="#1a7f64" stroke-width="2.5"/>
+  <!-- Folded corner -->
+  <path d="M32 4v14a2 2 0 002 2h12" stroke="#1a7f64" stroke-width="2" stroke-linecap="round"/>
+  <path d="M32 4l14 14" stroke="#1a7f64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Scan lines representing analysis -->
+  <line x1="13" y1="26" x2="33" y2="26" stroke="#3fb950" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+  <line x1="13" y1="33" x2="28" y2="33" stroke="#3fb950" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+  <line x1="13" y1="40" x2="30" y2="40" stroke="#3fb950" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+  <!-- Checkmark overlay -->
+  <circle cx="36" cy="44" r="9" fill="#1a7f64"/>
+  <path d="M31.5 44l3 3 5.5-5.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Wordmark -->
+  <text x="60" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="700" fill="#e6edf3" letter-spacing="-0.5">RAG</text>
+  <text x="126" y="28" font-family="system-ui, -apple-system, sans-serif" font-size="26" font-weight="400" fill="#3fb950" letter-spacing="-0.5">Lint</text>
+  <text x="60" y="46" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#8b949e" letter-spacing="0.5">Document quality audit</text>
+</svg>

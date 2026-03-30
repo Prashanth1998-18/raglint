@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAGLint | Report</title>
+    <link rel="icon" type="image/svg+xml" href="/static/raglint-favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body class="shell shell-app">
+    <div class="app-frame">
+        <header class="topbar">
+            <div class="topbar-brand-row">
+                <a class="brand-link" href="{{ upload_url or '/' }}" aria-label="Start a new RAGLint analysis">
+                    <img class="brand-logo" src="{{ url_for('static', path='raglint-logo.svg') }}" alt="RAGLint">
+                </a>
+                <span class="topbar-meta">{{ documents|length }} document{% if documents|length != 1 %}s{% endif %} analyzed</span>
+            </div>
+            <div class="topbar-actions">
+                <details class="menu-dropdown">
+                    <summary class="button-secondary">Export</summary>
+                    <div class="menu-dropdown-panel">
+                        <form action="{{ export_json_url }}" method="post">
+                            <button class="menu-dropdown-action" type="submit">Download JSON</button>
+                        </form>
+                        <form action="{{ export_markdown_url }}" method="post">
+                            <button class="menu-dropdown-action" type="submit">Download Markdown</button>
+                        </form>
+                    </div>
+                </details>
+                <a class="button-secondary" href="{{ upload_url or '/' }}">New analysis</a>
+            </div>
+        </header>
+
+        <main class="page page-report page-report-modern">
+            {% if sample_report.enabled %}
+            <section class="status status-info sample-report-banner">
+                <div class="sample-report-banner-copy">
+                    <p class="upload-context">{{ sample_report.eyebrow }}</p>
+                    <strong>{{ sample_report.top_title }}</strong>
+                    <span>{{ sample_report.top_message }}</span>
+                </div>
+                <a class="button-primary" href="{{ upload_url or '/' }}">{{ sample_report.top_button_label }}</a>
+            </section>
+            {% endif %}
+
+            <section class="panel report-panel health-overview-panel">
+                <div class="health-overview-layout">
+                    <article class="gauge-card health-gauge-card {{ health_dashboard.overall_severity_class }}">
+                        <div
+                            class="gauge-ring {{ health_dashboard.overall_severity_class }}"
+                            style="--gauge-value: {{ health_dashboard.overall_score }};"
+                        >
+                            <div class="gauge-ring-inner">
+                                <span class="metric-kicker">Overall health</span>
+                                <strong class="gauge-value">{{ health_dashboard.overall_score_label }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="health-gauge-copy">
+                            <p class="metric-description">Projected after fixes: <strong>{{ health_dashboard.projected_score_label }}</strong></p>
+                            <p class="metric-description">Weighted from duplication, staleness, contradictions, document information, and content quality signals.</p>
+                            {% if health_dashboard.score_note %}
+                            <p class="metric-description">{{ health_dashboard.score_note }}</p>
+                            {% endif %}
+                        </div>
+                    </article>
+
+                    <div class="health-card-grid">
+                        {% for dimension in health_dashboard.dimension_scores %}
+                        <article class="health-metric-card {{ dimension.severity_class }}">
+                            <span class="summary-label">{{ "Content quality" if dimension.label == "ROT" else ("Document information" if dimension.label == "Metadata" else dimension.label) }}</span>
+                            <strong class="health-metric-value">{{ dimension.score_label }}</strong>
+                        </article>
+                        {% endfor %}
+                        <article class="health-metric-card health-metric-card-documents {% if health_dashboard.summary.unique_documents_with_issues > 0 %}severity-red{% else %}severity-green{% endif %}">
+                            <span class="summary-label">Documents</span>
+                            <strong class="health-metric-value">{{ health_dashboard.summary.total_documents }}</strong>
+                            <span class="health-metric-note {% if health_dashboard.summary.unique_documents_with_issues > 0 %}is-danger{% endif %}">
+                                {{ health_dashboard.summary.unique_documents_with_issues }} with issues
+                            </span>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="findings-panel">
+                <p class="section-label">Findings</p>
+                <div class="findings-list">
+                    {% if report_warnings %}
+                    <section class="panel report-panel">
+                        <div class="section-panel-body">
+                            <div class="stack">
+                                {% for warning in report_warnings %}
+                                <div class="status status-warning">
+                                    <strong>Warning.</strong>
+                                    <span>{{ warning }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </section>
+                    {% endif %}
+
+        <details class="panel report-panel report-section-panel" id="duplication-section" style="order: {{ 0 if pass_overviews_by_key['duplication'].severity_class == 'severity-red' else 1 if pass_overviews_by_key['duplication'].severity_class == 'severity-orange' else 2 }};">
+            <summary class="section-toggle {{ pass_overviews_by_key['duplication'].severity_class }}">
+                <div class="section-toggle-copy">
+                    <div class="section-kicker-row">
+                        <span class="section-icon">D</span>
+                        <p class="finding-kicker">Duplications</p>
+                    </div>
+                    <h2>Duplications</h2>
+                    <p class="record-subtitle">{{ pass_overviews_by_key["duplication"].summary }}</p>
+                </div>
+                <div class="header-badges">
+                    <span class="count-badge">{{ section_counts.duplication }}</span>
+                    <div class="support-note">
+                        <span>Exact {{ finding_counts.exact }}</span>
+                        <span>Near {{ finding_counts.near_duplicate }}</span>
+                        <span>Indexed {{ finding_counts.already_in_index }}</span>
+                    </div>
+                </div>
+            </summary>
+
+            <div class="section-panel-body">
+                {% if duplication_error %}
+                <div class="status status-error">
+                    <strong>Analysis issue.</strong>
+                    <span>{{ duplication_error }}</span>
+                </div>
+                {% endif %}
+
+                {% if duplication_message %}
+                <div class="status status-info">
+                    <strong>Analysis note.</strong>
+                    <span>{{ duplication_message }}</span>
+                </div>
+                {% endif %}
+
+                {% if duplication_findings %}
+                <div class="stack">
+                    {% for finding in duplication_findings %}
+                    <details class="finding-card {{ finding.severity_class }}">
+                        <summary class="finding-summary">
+                            <div class="finding-summary-copy">
+                                <p class="finding-kicker">{{ finding.finding_label }}</p>
+                                <h3>{{ finding.chunks|length }} text segment{% if finding.chunks|length != 1 %}s{% endif %} involved</h3>
+                                <p class="record-subtitle">
+                                    {% for chunk in finding.chunks %}
+                                        {{ chunk.source_filename }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </p>
+                            </div>
+                            <div class="record-chip-group">
+                                <span class="record-chip">Similarity {{ finding.similarity_label }}</span>
+                                <span class="record-chip">{{ finding.finding_label }}</span>
+                            </div>
+                        </summary>
+
+                        <div class="finding-body">
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Why it matters</h4>
+                                    <p class="empty-copy">{{ finding.explanation }}</p>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Recommendation</h4>
+                                    <p class="empty-copy">{{ finding.recommendation }}</p>
+                                </section>
+                            </div>
+
+                            <div class="finding-text-grid">
+                                {% for chunk in finding.chunks %}
+                                <section class="detail-card compare-card">
+                                    <div class="section-heading">
+                                        <h4>{{ chunk.source_filename }}</h4>
+                                        <span>{{ chunk.source_scope|replace('_', ' ') }}</span>
+                                    </div>
+                                    <pre>{{ chunk.text }}</pre>
+                                </section>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% elif not duplication_error %}
+                <p class="empty-copy">No duplication findings are available for this run.</p>
+                {% endif %}
+            </div>
+        </details>
+
+        <details class="panel report-panel report-section-panel" id="staleness-section" style="order: {{ 0 if pass_overviews_by_key['staleness'].severity_class == 'severity-red' else 1 if pass_overviews_by_key['staleness'].severity_class == 'severity-orange' else 2 }};">
+            <summary class="section-toggle {{ pass_overviews_by_key['staleness'].severity_class }}">
+                <div class="section-toggle-copy">
+                    <div class="section-kicker-row">
+                        <span class="section-icon">S</span>
+                        <p class="finding-kicker">Outdated content</p>
+                    </div>
+                    <h2>Outdated content</h2>
+                    <p class="record-subtitle">{{ pass_overviews_by_key["staleness"].summary }}</p>
+                </div>
+                <div class="header-badges">
+                    <span class="count-badge">{{ section_counts.staleness }}</span>
+                    <div class="support-note">
+                        <span>High {{ staleness_summary.high or 0 }}</span>
+                        <span>Review {{ staleness_summary.review or 0 }}</span>
+                        <span>Monitor {{ staleness_summary.fresh or 0 }}</span>
+                        <span>Superseded {{ staleness_summary.superseded or 0 }}</span>
+                    </div>
+                </div>
+            </summary>
+
+            <div class="section-panel-body">
+                {% if staleness_error %}
+                <div class="status status-error">
+                    <strong>Staleness issue.</strong>
+                    <span>{{ staleness_error }}</span>
+                </div>
+                {% endif %}
+
+                {% if staleness_message %}
+                <div class="status status-info">
+                    <strong>Staleness note.</strong>
+                    <span>{{ staleness_message }}</span>
+                </div>
+                {% endif %}
+
+                {% if staleness_findings %}
+                <div class="stack">
+                    {% for finding in staleness_findings %}
+                    <details class="finding-card {{ finding.severity_class }}">
+                        <summary class="finding-summary">
+                            <div class="finding-summary-copy">
+                                <p class="finding-kicker">{{ finding.finding_label }}</p>
+                                <h3>{{ finding.source_filename }}</h3>
+                                <p class="record-subtitle">{{ finding.signal_count }} signals</p>
+                            </div>
+                            <div class="record-chip-group">
+                                <span class="record-chip">Score {{ finding.score_label }}</span>
+                            </div>
+                        </summary>
+
+                        <div class="finding-body">
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Detected signals</h4>
+                                    <dl class="metadata-list">
+                                        {% if finding.signals.metadata_dates %}
+                                        <div><dt>Metadata dates</dt><dd>{{ finding.signals.metadata_dates|join(", ") }}</dd></div>
+                                        {% endif %}
+                                        {% if finding.signals.detected_dates %}
+                                        <div><dt>Dates found in text</dt><dd>{{ finding.signals.detected_dates|join(", ") }}</dd></div>
+                                        {% endif %}
+                                        {% if finding.signals.temporal_language %}
+                                        <div><dt>Temporal language</dt><dd>{{ finding.signals.temporal_language|join(", ") }}</dd></div>
+                                        {% endif %}
+                                        {% if finding.signals.version_references %}
+                                        <div><dt>Version references</dt><dd>{{ finding.signals.version_references|join(", ") }}</dd></div>
+                                        {% endif %}
+                                        {% if finding.signals.notes %}
+                                        <div><dt>Notes</dt><dd>{{ finding.signals.notes|join(", ") }}</dd></div>
+                                        {% endif %}
+                                    </dl>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Recommendation</h4>
+                                    <p class="empty-copy">{{ finding.recommendation }}</p>
+                                    <p class="empty-copy">{{ finding.explanation }}</p>
+                                </section>
+                            </div>
+
+                            <section class="detail-card compare-card">
+                                <div class="section-heading">
+                                    <h4>Source text</h4>
+                                    <span>{{ finding.source_filename }}</span>
+                                </div>
+                                <pre>{{ finding.chunk_text }}</pre>
+                            </section>
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-copy">No staleness findings are available for this run.</p>
+                {% endif %}
+
+                {% if supersession_findings %}
+                <div class="panel-header panel-subheader">
+                    <div>
+                        <h3>Potentially superseded by newer content</h3>
+                        <p>Existing indexed text that may have been replaced by fresher uploaded content.</p>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    {% for finding in supersession_findings %}
+                    <details class="finding-card {{ finding.severity_class }}">
+                        <summary class="finding-summary">
+                            <div class="finding-summary-copy">
+                                <p class="finding-kicker">Potentially superseded</p>
+                                <h3>{{ finding.source_filename }}</h3>
+                                <p class="record-subtitle">Newer match: {{ finding.related_chunk.source_filename if finding.related_chunk else "Uploaded text" }}</p>
+                            </div>
+                            <div class="record-chip-group">
+                                <span class="record-chip">Score {{ finding.score_label }}</span>
+                                {% if finding.related_similarity_label %}
+                                <span class="record-chip">Similarity {{ finding.related_similarity_label }}</span>
+                                {% endif %}
+                            </div>
+                        </summary>
+
+                        <div class="finding-body">
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Why it matters</h4>
+                                    <p class="empty-copy">{{ finding.explanation }}</p>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Recommendation</h4>
+                                    <p class="empty-copy">{{ finding.recommendation }}</p>
+                                </section>
+                            </div>
+
+                            <div class="finding-text-grid">
+                                <section class="detail-card compare-card">
+                                    <div class="section-heading">
+                                        <h4>Existing content</h4>
+                                        <span>{{ finding.source_filename }}</span>
+                                    </div>
+                                    <pre>{{ finding.chunk_text }}</pre>
+                                </section>
+                                <section class="detail-card compare-card">
+                                    <div class="section-heading">
+                                        <h4>Newer content</h4>
+                                        <span>{{ finding.related_chunk.source_filename if finding.related_chunk else "Uploaded text" }}</span>
+                                    </div>
+                                    <pre>{{ finding.related_chunk.text if finding.related_chunk else "" }}</pre>
+                                </section>
+                            </div>
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </details>
+
+        <details class="panel report-panel report-section-panel" id="contradiction-section" style="order: {{ 0 if pass_overviews_by_key['contradictions'].severity_class == 'severity-red' else 1 if pass_overviews_by_key['contradictions'].severity_class == 'severity-orange' else 2 }};">
+            <summary class="section-toggle {{ pass_overviews_by_key['contradictions'].severity_class }}">
+                <div class="section-toggle-copy">
+                    <div class="section-kicker-row">
+                        <span class="section-icon">X</span>
+                        <p class="finding-kicker">Contradictions</p>
+                    </div>
+                    <h2>Contradictions</h2>
+                    <p class="record-subtitle">{{ pass_overviews_by_key["contradictions"].summary }}</p>
+                </div>
+                <div class="header-badges">
+                    <span class="count-badge">{{ section_counts.contradictions }}</span>
+                    <div class="support-note">
+                        <span>High {{ contradiction_summary.high or 0 }}</span>
+                        <span>Medium {{ contradiction_summary.medium or 0 }}</span>
+                        <span>LLM calls {{ contradiction_summary.llm_calls or 0 }}</span>
+                    </div>
+                </div>
+            </summary>
+
+            <div class="section-panel-body">
+                {% if contradiction_error %}
+                <div class="status status-error">
+                    <strong>Contradiction issue.</strong>
+                    <span>{{ contradiction_error }}</span>
+                </div>
+                {% endif %}
+
+                {% if contradiction_message %}
+                <div class="status status-info">
+                    <strong>Contradiction note.</strong>
+                    <span>{{ contradiction_message }}</span>
+                </div>
+                {% endif %}
+
+                {% if contradiction_findings %}
+                <div class="stack">
+                    {% for finding in contradiction_findings %}
+                    {% set is_brownfield_contradiction = finding.chunk_a_label == "existing" or finding.chunk_b_label == "existing" %}
+                    <details class="finding-card {{ finding.severity_class }}">
+                        <summary class="finding-summary">
+                            <div class="finding-summary-copy">
+                                <p class="finding-kicker">
+                                    {% if is_brownfield_contradiction %}
+                                        Contradicts existing index
+                                    {% else %}
+                                        Contradiction finding
+                                    {% endif %}
+                                </p>
+                                <h3>{{ finding.source_a }} vs {{ finding.source_b }}</h3>
+                                <p class="record-subtitle">{{ finding.severity_label }}</p>
+                            </div>
+                            <div class="record-chip-group">
+                                <span class="record-chip">Similarity {{ finding.similarity_label }}</span>
+                                <span class="record-chip">{{ finding.severity_label }}</span>
+                                {% if is_brownfield_contradiction %}
+                                <span class="record-chip">Contradicts existing index</span>
+                                {% endif %}
+                            </div>
+                        </summary>
+
+                        <div class="finding-body">
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Conflicting claims</h4>
+                                    <dl class="metadata-list">
+                                        <div><dt>{{ finding.source_a }}</dt><dd>{{ finding.claim_a }}</dd></div>
+                                        <div><dt>{{ finding.source_b }}</dt><dd>{{ finding.claim_b }}</dd></div>
+                                    </dl>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Recommendation</h4>
+                                    <p class="empty-copy">{{ finding.recommendation }}</p>
+                                    <p class="empty-copy">{{ finding.explanation }}</p>
+                                </section>
+                            </div>
+
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Why it matters</h4>
+                                    <p class="empty-copy">{{ finding.why_it_matters }}</p>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Source scope</h4>
+                                    <dl class="metadata-list">
+                                        <div><dt>{{ finding.source_a }}</dt><dd>{{ finding.chunk_a_label }}</dd></div>
+                                        <div><dt>{{ finding.source_b }}</dt><dd>{{ finding.chunk_b_label }}</dd></div>
+                                    </dl>
+                                </section>
+                            </div>
+
+                            <div class="finding-text-grid">
+                                <section class="detail-card compare-card">
+                                    <div class="section-heading">
+                                        <h4>{{ finding.source_a }}</h4>
+                                        <span>{{ finding.chunk_a_label }}</span>
+                                    </div>
+                                    <pre>{{ finding.chunk_text_a }}</pre>
+                                </section>
+                                <section class="detail-card compare-card">
+                                    <div class="section-heading">
+                                        <h4>{{ finding.source_b }}</h4>
+                                        <span>{{ finding.chunk_b_label }}</span>
+                                    </div>
+                                    <pre>{{ finding.chunk_text_b }}</pre>
+                                </section>
+                            </div>
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% elif not contradiction_error and not contradiction_message %}
+                <p class="empty-copy">No contradiction findings are available for this run.</p>
+                {% endif %}
+
+                <div class="summary-grid analysis-footer">
+                    <article class="summary-card">
+                        <span class="summary-label">LLM calls made</span>
+                        <strong>{{ contradiction_summary.llm_calls or 0 }}</strong>
+                    </article>
+                    <article class="summary-card">
+                        <span class="summary-label">Estimated cost</span>
+                        <strong>{{ contradiction_summary.estimated_cost_label }}</strong>
+                    </article>
+                </div>
+            </div>
+        </details>
+
+        <details class="panel report-panel report-section-panel" id="metadata-section" style="order: {{ 0 if pass_overviews_by_key['metadata'].severity_class == 'severity-red' else 1 if pass_overviews_by_key['metadata'].severity_class == 'severity-orange' else 2 }};">
+            <summary class="section-toggle {{ pass_overviews_by_key['metadata'].severity_class }}">
+                <div class="section-toggle-copy">
+                    <div class="section-kicker-row">
+                        <span class="section-icon">M</span>
+                        <p class="finding-kicker">Document information</p>
+                    </div>
+                    <h2>Document information</h2>
+                    <p class="record-subtitle">{{ pass_overviews_by_key["metadata"].summary }}</p>
+                </div>
+                <div class="header-badges">
+                    <span class="count-badge">{{ section_counts.metadata }}</span>
+                    {% if metadata_summary %}
+                    <div class="support-note">
+                        <span>Average {{ metadata_summary.average_completeness_label }}</span>
+                        <span>Fields {{ metadata_summary.expected_fields|length }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </summary>
+
+            <div class="section-panel-body">
+                {% if metadata_error %}
+                <div class="status status-error">
+                    <strong>Metadata issue.</strong>
+                    <span>{{ metadata_error }}</span>
+                </div>
+                {% endif %}
+
+                {% if metadata_message %}
+                <div class="status status-info">
+                    <strong>Metadata note.</strong>
+                    <span>{{ metadata_message }}</span>
+                </div>
+                {% endif %}
+
+                {% if existing_chunks %}
+                <div class="status status-info">
+                    <strong>Existing index note.</strong>
+                    <span>This review covers uploaded documents only. Existing index content is not included in document information or content quality checks.</span>
+                </div>
+                {% endif %}
+
+                {% if metadata_summary %}
+                <div class="metadata-summary-grid">
+                    <article class="summary-card">
+                        <span class="summary-label">Average completeness</span>
+                        <strong>{{ metadata_summary.average_completeness_label }}</strong>
+                    </article>
+                    <article class="summary-card">
+                        <span class="summary-label">Configured fields</span>
+                        <strong class="summary-copy">{{ metadata_summary.expected_fields_label or "Standard defaults" }}</strong>
+                    </article>
+                    <article class="summary-card summary-card-wide">
+                        <span class="summary-label">Collection consistency</span>
+                        <strong class="summary-copy">
+                            {% if metadata_summary.consistency_issues %}
+                                {{ metadata_summary.consistency_issues|join("; ") }}
+                            {% else %}
+                                No collection-level consistency issues detected.
+                            {% endif %}
+                        </strong>
+                    </article>
+                </div>
+                {% endif %}
+
+                {% if metadata_findings %}
+                <div class="stack">
+                    {% for finding in metadata_findings %}
+                    <details class="finding-card {{ finding.severity_class }}">
+                        <summary class="finding-summary">
+                            <div class="finding-summary-copy">
+                                <p class="finding-kicker">Document information completeness</p>
+                                <h3>{{ finding.document_filename }}</h3>
+                                <p class="record-subtitle">{{ finding.missing_fields|length }} missing field{% if finding.missing_fields|length != 1 %}s{% endif %}</p>
+                            </div>
+                            <div class="record-chip-group">
+                                <span class="record-chip">Score {{ finding.score_label }}</span>
+                                {% if finding.consistency_issues %}
+                                <span class="record-chip">{{ finding.consistency_issues|length }} consistency issue{% if finding.consistency_issues|length != 1 %}s{% endif %}</span>
+                                {% endif %}
+                            </div>
+                        </summary>
+
+                        <div class="finding-body">
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Why it matters</h4>
+                                    <p class="empty-copy">{{ finding.explanation }}</p>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Recommendation</h4>
+                                    <p class="empty-copy">{{ finding.recommendation }}</p>
+                                </section>
+                            </div>
+
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Missing fields</h4>
+                                    {% if finding.missing_fields %}
+                                    <ul class="finding-list">
+                                        {% for item in finding.missing_fields %}
+                                        <li>{{ item }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <p class="empty-copy">No required metadata fields are missing.</p>
+                                    {% endif %}
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Consistency issues</h4>
+                                    {% if finding.consistency_issues %}
+                                    <ul class="finding-list">
+                                        {% for item in finding.consistency_issues %}
+                                        <li>{{ item }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% else %}
+                                    <p class="empty-copy">No document-level consistency issues were detected.</p>
+                                    {% endif %}
+                                </section>
+                            </div>
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-copy">No document information findings are available for this run.</p>
+                {% endif %}
+            </div>
+        </details>
+
+        <details class="panel report-panel report-section-panel" id="rot-section" style="order: {{ 0 if pass_overviews_by_key['rot'].severity_class == 'severity-red' else 1 if pass_overviews_by_key['rot'].severity_class == 'severity-orange' else 2 }};">
+            <summary class="section-toggle {{ pass_overviews_by_key['rot'].severity_class }}">
+                <div class="section-toggle-copy">
+                    <div class="section-kicker-row">
+                        <span class="section-icon">Q</span>
+                        <p class="finding-kicker">Content quality</p>
+                    </div>
+                    <h2>Content quality</h2>
+                    <p class="record-subtitle">{{ pass_overviews_by_key["rot"].summary }}</p>
+                </div>
+                <div class="header-badges">
+                    <span class="count-badge">{{ section_counts.rot }}</span>
+                </div>
+            </summary>
+
+            <div class="section-panel-body">
+                {% if rot_error %}
+                <div class="status status-error">
+                    <strong>Content quality issue.</strong>
+                    <span>{{ rot_error }}</span>
+                </div>
+                {% endif %}
+
+                {% if rot_message %}
+                <div class="status status-info">
+                    <strong>Content quality note.</strong>
+                    <span>{{ rot_message }}</span>
+                </div>
+                {% endif %}
+
+                {% if existing_chunks %}
+                <div class="status status-info">
+                    <strong>Existing index note.</strong>
+                    <span>This review covers uploaded documents only. Existing index content is not included in document information or content quality checks.</span>
+                </div>
+                {% endif %}
+
+                {% if rot_findings %}
+                <div class="stack">
+                    {% for finding in rot_findings %}
+                    <details class="finding-card {{ finding.severity_class }}">
+                        <summary class="finding-summary">
+                            <div class="finding-summary-copy">
+                                <p class="finding-kicker">Content quality flag</p>
+                                <h3>{{ finding.document_filename }}</h3>
+                                <p class="record-subtitle">{{ finding.classifications|join(", ") }}</p>
+                            </div>
+                            <div class="record-chip-group">
+                                {% for label in finding.classifications %}
+                                <span class="record-chip">{{ label }}</span>
+                                {% endfor %}
+                            </div>
+                        </summary>
+
+                        <div class="finding-body">
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Why it was flagged</h4>
+                                    <p class="empty-copy">{{ finding.explanation }}</p>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Impact on retrieval quality</h4>
+                                    <p class="empty-copy">{{ finding.impact_on_rag_quality }}</p>
+                                </section>
+                            </div>
+
+                            <div class="detail-grid finding-details">
+                                <section class="detail-card">
+                                    <h4>Signals</h4>
+                                    <dl class="metadata-list">
+                                        <div><dt>Duplicate ratio</dt><dd>{{ finding.signals.duplicate_ratio if finding.signals.duplicate_ratio is not none else "0" }}</dd></div>
+                                        <div><dt>Average staleness</dt><dd>{{ finding.signals.average_staleness_score if finding.signals.average_staleness_score is not none else "0" }}</dd></div>
+                                        <div><dt>Average segment words</dt><dd>{{ finding.signals.average_chunk_word_count if finding.signals.average_chunk_word_count is not none else "0" }}</dd></div>
+                                        <div><dt>Unique-term ratio</dt><dd>{{ finding.signals.average_unique_term_ratio if finding.signals.average_unique_term_ratio is not none else "0" }}</dd></div>
+                                        <div><dt>Contradictions</dt><dd>{{ finding.signals.contradiction_count or 0 }}</dd></div>
+                                        {% if finding.signals.metadata %}
+                                        <div>
+                                            <dt>Information completeness</dt>
+                                            <dd>{{ (finding.signals.metadata.completeness_score * 100)|round(0)|int }}%</dd>
+                                        </div>
+                                        {% endif %}
+                                    </dl>
+                                </section>
+                                <section class="detail-card">
+                                    <h4>Recommendation</h4>
+                                    <p class="empty-copy">{{ finding.recommendation }}</p>
+                                    {% if finding.signals.boilerplate_patterns %}
+                                    <p class="empty-copy">Boilerplate patterns: {{ finding.signals.boilerplate_patterns|join(", ") }}</p>
+                                    {% endif %}
+                                </section>
+                            </div>
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="empty-copy">No content quality findings are available for this run.</p>
+                {% endif %}
+            </div>
+        </details>
+
+                </div>
+            </section>
+
+        <section class="panel report-panel appendix-panel">
+            <div class="panel-header section-header">
+                <div>
+                    <h2>Source appendix</h2>
+                    <p>Parsed documents and normalized text segments retained for validation and debugging.</p>
+                </div>
+            </div>
+
+            <div class="stack">
+                <details class="finding-card severity-low">
+                    <summary class="finding-summary">
+                        <div class="finding-summary-copy">
+                            <p class="finding-kicker">Validation appendix</p>
+                            <h3>Documents</h3>
+                            <p class="record-subtitle">{{ documents|length }} parsed document{% if documents|length != 1 %}s{% endif %}</p>
+                        </div>
+                    </summary>
+                    <div class="finding-body">
+                        {% if documents %}
+                        <div class="stack">
+                            {% for document in documents %}
+                            <article class="record-card">
+                                <div class="record-header">
+                                    <div>
+                                        <h3>{{ document.metadata.filename or document.source_path or document.id }}</h3>
+                                        <p class="record-subtitle">Source: {{ document.source_path or "uploaded file" }}</p>
+                                    </div>
+                                    <div class="record-chip-group">
+                                        <span class="record-chip">{{ document.metadata.file_extension or "unknown" }}</span>
+                                        <span class="record-chip">{{ document.text|length }} chars</span>
+                                    </div>
+                                </div>
+                                <div class="detail-grid">
+                                    <section class="detail-card">
+                                        <h4>Core metadata</h4>
+                                        <dl class="metadata-list">
+                                            <div><dt>Filename</dt><dd>{{ document.metadata.filename or "n/a" }}</dd></div>
+                                            <div><dt>File size</dt><dd>{{ document.metadata.file_size or "n/a" }}</dd></div>
+                                            <div><dt>Created</dt><dd>{{ document.metadata.created_at or "n/a" }}</dd></div>
+                                            <div><dt>Modified</dt><dd>{{ document.metadata.modified_at or "n/a" }}</dd></div>
+                                        </dl>
+                                    </section>
+                                    <section class="detail-card">
+                                        <h4>Embedded metadata</h4>
+                                        {% if document.metadata.embedded_metadata %}
+                                        <dl class="metadata-list">
+                                            {% for key, value in document.metadata.embedded_metadata.items() %}
+                                            <div><dt>{{ key }}</dt><dd>{{ value }}</dd></div>
+                                            {% endfor %}
+                                        </dl>
+                                        {% else %}
+                                        <p class="empty-copy">No embedded metadata was found for this file.</p>
+                                        {% endif %}
+                                    </section>
+                                </div>
+                                <section class="text-block">
+                                    <div class="section-heading">
+                                        <h4>Extracted text</h4>
+                                        <span>{{ document.text|length }} characters</span>
+                                    </div>
+                                    <pre>{{ document.text }}</pre>
+                                </section>
+                            </article>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="empty-copy">No documents were parsed in this request.</p>
+                        {% endif %}
+                    </div>
+                </details>
+
+                <details class="finding-card severity-low">
+                    <summary class="finding-summary">
+                        <div class="finding-summary-copy">
+                            <p class="finding-kicker">Validation appendix</p>
+                            <h3>Generated text segments</h3>
+                            <p class="record-subtitle">{{ generated_chunks|length }} generated text segment{% if generated_chunks|length != 1 %}s{% endif %}</p>
+                        </div>
+                    </summary>
+                    <div class="finding-body">
+                        {% if generated_chunks %}
+                        <div class="stack">
+                            {% for chunk in generated_chunks %}
+                            <article class="record-card chunk-card">
+                                <div class="record-header">
+                                    <div>
+                                        <h3>Text segment {{ chunk.position if chunk.position is not none else loop.index0 }}</h3>
+                                        <p class="record-subtitle">Parent document: {{ chunk.parent_document_id or "n/a" }}</p>
+                                    </div>
+                                    <div class="record-chip-group">
+                                        <span class="record-chip">{{ chunk.text|length }} chars</span>
+                                        {% if chunk.embedding_dimensions %}
+                                        <span class="record-chip">{{ chunk.embedding_dimensions }} dims</span>
+                                        {% endif %}
+                                        {% if chunk.start_index is not none and chunk.end_index is not none %}
+                                        <span class="record-chip">{{ chunk.start_index }} to {{ chunk.end_index }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <section class="text-block">
+                                    <div class="section-heading">
+                                        <h4>Text segment</h4>
+                                    </div>
+                                    <pre>{{ chunk.text }}</pre>
+                                </section>
+                            </article>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="empty-copy">No generated text segments are available.</p>
+                        {% endif %}
+                    </div>
+                </details>
+
+                <details class="finding-card severity-low">
+                    <summary class="finding-summary">
+                        <div class="finding-summary-copy">
+                            <p class="finding-kicker">Validation appendix</p>
+                            <h3>Imported text segments</h3>
+                            <p class="record-subtitle">{{ existing_chunks|length }} imported text segment{% if existing_chunks|length != 1 %}s{% endif %}</p>
+                        </div>
+                    </summary>
+                    <div class="finding-body">
+                        {% if existing_chunks %}
+                        <div class="stack">
+                            {% for chunk in existing_chunks %}
+                            <article class="record-card chunk-card">
+                                <div class="record-header">
+                                    <div>
+                                        <h3>{{ chunk.id or "Imported text segment" }}</h3>
+                                        <p class="record-subtitle">Parent document: {{ chunk.parent_document_id or "n/a" }}</p>
+                                    </div>
+                                    <div class="record-chip-group">
+                                        <span class="record-chip">{{ chunk.text|length }} chars</span>
+                                        {% if chunk.embedding_dimensions %}
+                                        <span class="record-chip">{{ chunk.embedding_dimensions }} dims</span>
+                                        {% endif %}
+                                        {% if chunk.position is not none %}
+                                        <span class="record-chip">Position {{ chunk.position }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <section class="text-block">
+                                    <div class="section-heading">
+                                        <h4>Text segment</h4>
+                                    </div>
+                                    <pre>{{ chunk.text }}</pre>
+                                </section>
+                            </article>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="empty-copy">No existing index export was uploaded for this run.</p>
+                        {% endif %}
+                    </div>
+                </details>
+            </div>
+        </section>
+
+        {% if sample_report.enabled %}
+        <section class="status status-info sample-report-cta">
+            <div class="sample-report-banner-copy">
+                <strong>{{ sample_report.bottom_title }}</strong>
+                <span>{{ sample_report.bottom_message }}</span>
+            </div>
+            <a class="button-primary" href="{{ upload_url or '/' }}">{{ sample_report.bottom_button_label }}</a>
+        </section>
+        {% endif %}
+
+        </main>
+    </div>
+</body>
+</html>

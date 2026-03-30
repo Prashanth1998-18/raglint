@@ -1,0 +1,57 @@
+[
+  {
+    "filename": "api-reference-v3.md",
+    "title": "API Reference v3",
+    "text": "# API Reference v3.2\n\nBase URL: https://api.acmecloud.com/v3\n\n## Authentication\n\nAll requests require a Bearer token in the Authorization header. Tokens expire after 24 hours. Use the /auth/token endpoint to generate a new token.\n\n## Rate Limits\n\nFree tier: 100 requests per minute. Pro tier: 1,000 requests per minute. Enterprise: 10,000 requests per minute. Rate limit headers are included in every response.\n\n## Endpoints\n\n### GET /users\nReturns a paginated list of users. Default page size is 25. Maximum page size is 100.\n\n### POST /users\nCreates a new user. Required fields: email, name. Optional fields: role, department, phone.\n\n### GET /users/{id}\nReturns a single user by ID. Returns 404 if user not found.\n\n### DELETE /users/{id}\nSoft-deletes a user. Requires admin role. Deleted users can be restored within 30 days."
+  },
+  {
+    "filename": "api-reference-v4.md",
+    "title": "API Reference v4",
+    "text": "# API Reference v4.0\n\nBase URL: https://api.acmecloud.com/v4\n\n## Authentication\n\nAll requests require OAuth2 authentication. Bearer tokens are issued via the /oauth/token endpoint. Tokens expire after 1 hour. Refresh tokens are valid for 30 days.\n\n## Rate Limits\n\nFree tier: 200 requests per minute. Pro tier: 2,000 requests per minute. Enterprise: unlimited. Rate limit information is available via the /rate-limit endpoint.\n\n## Endpoints\n\n### GET /users\nReturns a paginated list of users. Default page size is 50. Maximum page size is 200.\n\n### POST /users\nCreates a new user. Required fields: email, full_name, role. Optional fields: department, phone, timezone.\n\n### GET /users/{id}\nReturns a single user by ID. Returns 404 if not found.\n\n### DELETE /users/{id}\nPermanently deletes a user and all associated data. Requires admin role. This action cannot be undone."
+  },
+  {
+    "filename": "getting-started.md",
+    "title": "Getting Started Guide",
+    "text": "# Getting Started with AcmeCloud\n\n## Prerequisites\n\nYou need Node.js 16 or higher and npm 8 or higher. Python users should have Python 3.8 or higher installed.\n\n## Installation\n\nInstall the SDK using npm:\n\nnpm install @acmecloud/sdk\n\nOr using pip:\n\npip install acmecloud\n\n## Quick Start\n\nFirst, generate an API key from the dashboard at https://dashboard.acmecloud.com/settings/api-keys.\n\nThen initialize the client:\n\nconst client = new AcmeCloud({ apiKey: 'your-key-here' });\n\n## Authentication\n\nAll API requests use Bearer token authentication. Generate a token by calling the /auth/token endpoint with your API key. Tokens are valid for 24 hours.\n\n## Support\n\nFor help, email support@acmecloud.com or visit our community forum at https://community.acmecloud.com."
+  },
+  {
+    "filename": "quickstart-guide.md",
+    "title": "Quickstart Guide",
+    "text": "# AcmeCloud Quickstart\n\n## Requirements\n\nNode.js version 16+ and npm 8+ are required. For Python, use Python 3.8 or later.\n\n## Install\n\nUsing npm:\n\nnpm install @acmecloud/sdk\n\nUsing pip:\n\npip install acmecloud\n\n## Setup\n\nGet your API key from the settings page at https://dashboard.acmecloud.com/settings/api-keys.\n\nInitialize the SDK:\n\nconst acme = new AcmeCloud({ apiKey: 'YOUR_API_KEY' });\n\n## Authentication\n\nThe SDK handles authentication automatically using your API key. Under the hood, it uses Bearer tokens that expire after 24 hours.\n\n## Need Help?\n\nReach out to support@acmecloud.com or check the community forum at https://community.acmecloud.com."
+  },
+  {
+    "filename": "deployment-guide-2023.md",
+    "title": "Deployment Guide",
+    "text": "# Deployment Guide\n\nLast updated: September 2023\n\n## Server Requirements\n\nMinimum: 2 CPU cores, 4GB RAM, 20GB disk. Recommended: 4 CPU cores, 8GB RAM, 50GB disk. AcmeCloud currently supports deployment on AWS and GCP only.\n\n## Deployment Steps\n\n1. Pull the latest Docker image: docker pull acmecloud/server:latest\n2. Configure environment variables (see .env.example)\n3. Run database migrations: acme migrate up\n4. Start the server: docker compose up -d\n\n## SSL Configuration\n\nSSL certificates must be manually configured using Let's Encrypt. Automatic SSL is not supported at this time.\n\n## Monitoring\n\nUse the built-in /health endpoint for basic health checks. For detailed monitoring, integrate with Datadog or New Relic using our monitoring plugin. Contact devops@acmecloud.com for setup assistance."
+  },
+  {
+    "filename": "deployment-guide-current.md",
+    "title": "Deployment Guide (Current)",
+    "text": "# Deployment Guide\n\nLast updated: January 2026\n\n## Server Requirements\n\nMinimum: 2 CPU cores, 8GB RAM, 40GB disk. Recommended: 8 CPU cores, 16GB RAM, 100GB disk. AcmeCloud supports deployment on AWS, GCP, Azure, and self-hosted Kubernetes.\n\n## Deployment Steps\n\n1. Install the AcmeCloud CLI: npm install -g @acmecloud/cli\n2. Run: acme deploy init\n3. Follow the interactive setup wizard\n4. Deploy: acme deploy push\n\n## SSL Configuration\n\nSSL is automatically provisioned and renewed through our built-in certificate manager. No manual configuration required.\n\n## Monitoring\n\nBuilt-in observability dashboard available at /admin/monitoring. Supports OpenTelemetry for integration with Datadog, Grafana, New Relic, and other observability platforms."
+  },
+  {
+    "filename": "changelog.md",
+    "title": "Changelog",
+    "text": "# Changelog\n\n## v4.0.0 (2025-12-01)\n\n- Breaking: Authentication switched from API key + Bearer token to OAuth2\n- Breaking: DELETE /users now permanently deletes instead of soft-delete\n- New: Added /oauth/token endpoint\n- New: Added timezone field to user profiles\n- Changed: Default page size increased from 25 to 50\n- Changed: Maximum page size increased from 100 to 200\n- Removed: /auth/token endpoint (replaced by /oauth/token)\n\n## v3.2.1 (2025-06-15)\n\n- Fixed: Rate limit headers missing on 429 responses\n- Fixed: Pagination returning duplicate results\n\n## v3.2.0 (2025-03-01)\n\n- New: Added rate limit headers to all responses\n- New: Added /rate-limit endpoint for checking current usage\n- Changed: Free tier rate limit increased from 60 to 100 requests per minute"
+  },
+  {
+    "filename": "security-best-practices.md",
+    "title": "Security Best Practices",
+    "text": "# Security Best Practices\n\n## API Key Management\n\nStore API keys in environment variables, never in source code. Rotate keys every 90 days. Use separate keys for development and production.\n\n## Token Handling\n\nBearer tokens expire after 24 hours. Store tokens securely and refresh them before expiry. Never log tokens in application logs.\n\n## Data Encryption\n\nAll data is encrypted at rest using AES-256. Data in transit is protected by TLS 1.2. Client-side encryption is available for Enterprise customers.\n\n## Access Control\n\nUse the principle of least privilege. Assign roles based on job function. Regular access reviews should be conducted quarterly. Admin access requires multi-factor authentication."
+  },
+  {
+    "filename": "troubleshooting.md",
+    "title": "Troubleshooting Guide",
+    "text": "# Troubleshooting\n\n## Common Issues\n\n### 401 Unauthorized\n\nYour API key or token is invalid or expired. Generate a new token using the /auth/token endpoint. Make sure you're including the Bearer prefix in the Authorization header.\n\n### 429 Too Many Requests\n\nYou've exceeded your rate limit. Free tier allows 100 requests per minute. Upgrade to Pro for 1,000 requests per minute. Check the X-RateLimit-Remaining header to monitor usage.\n\n### 500 Internal Server Error\n\nThis is a server-side issue. Check the status page at https://status.acmecloud.com. If the issue persists, contact support@acmecloud.com with your request ID from the X-Request-Id header.\n\n### Connection Timeout\n\nEnsure your firewall allows outbound connections to api.acmecloud.com on port 443. If using a proxy, configure the SDK with your proxy settings."
+  },
+  {
+    "filename": "meeting-notes-api-review.md",
+    "title": "Meeting Notes - API Review",
+    "text": "# API Review Meeting\n\nDate: March 2024\nAttendees: Dev team\n\nDiscussed v4 migration timeline. No decisions made yet. Need to follow up with product team about breaking changes.\n\nAction items:\n- TBD\n- Schedule follow-up\n- Review backward compatibility\n\nNext meeting: TBD"
+  },
+  {
+    "filename": "draft-pricing-page.md",
+    "title": "Draft - Pricing Page",
+    "text": "# Pricing (DRAFT)\n\nDO NOT PUBLISH - placeholder content\n\nFree: $0/month, 100 req/min\nPro: $49/month, 1000 req/min\nEnterprise: Contact us\n\nTODO: Add feature comparison table\nTODO: Check pricing with finance team\nTODO: Add FAQ section"
+  }
+]

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAGLint | Upload</title>
+    <link rel="icon" type="image/svg+xml" href="/static/raglint-favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body class="shell shell-app">
+    <div class="app-frame">
+        <header class="topbar">
+            <a class="brand-link" href="/" aria-label="RAGLint home">
+                <img class="brand-logo" src="{{ url_for('static', path='raglint-logo.svg') }}" alt="RAGLint">
+            </a>
+            <div class="topbar-actions">
+                <button
+                    class="icon-button {% if api_key_configured %}is-configured{% endif %}"
+                    id="settings-button"
+                    type="button"
+                    aria-haspopup="dialog"
+                    aria-controls="api-key-modal"
+                    title="Open settings"
+                >
+                    <span class="icon-button-indicator" aria-hidden="true"></span>
+                    <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                        <path d="M12 8.75A3.25 3.25 0 1 0 12 15.25A3.25 3.25 0 1 0 12 8.75Z" stroke="currentColor" stroke-width="1.8"/>
+                        <path d="M19 12a7 7 0 0 0-.08-1l2.03-1.58-1.92-3.32-2.44.78a7.46 7.46 0 0 0-1.74-1l-.41-2.52h-3.84l-.41 2.52a7.46 7.46 0 0 0-1.74 1l-2.44-.78-1.92 3.32 2.03 1.58A7 7 0 0 0 5 12c0 .34.03.67.08 1L3.05 14.58l1.92 3.32 2.44-.78c.53.43 1.11.77 1.74 1l.41 2.52h3.84l.41-2.52c.63-.23 1.21-.57 1.74-1l2.44.78 1.92-3.32L18.92 13c.05-.33.08-.66.08-1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="sr-only">Open settings</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="page page-upload page-upload-focused">
+            <section class="tool-stage" id="upload-workbench">
+                <div class="upload-shell">
+                    <section class="sample-showcase">
+                        <div class="section-intro">
+                            <p class="upload-context">Try with sample data</p>
+                            <h1>Try with sample data</h1>
+                            <p class="section-description">See RAGLint in action on realistic document sets.</p>
+                        </div>
+
+                        <div class="sample-card-grid">
+                            {% for sample in sample_corpora %}
+                            <button
+                                class="sample-card"
+                                type="button"
+                                data-sample-trigger
+                                data-sample-id="{{ sample.sample_id }}"
+                                data-sample-start-url="{{ sample.start_url }}"
+                            >
+                                <span class="analysis-card-icon sample-card-icon" aria-hidden="true">
+                                    {% if sample.icon_key == "policies" %}
+                                    <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                                        <path d="M7 5.5h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M7 10h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M7 14.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <rect x="4.5" y="3.5" width="15" height="17" rx="2.5" stroke="currentColor" stroke-width="1.6"/>
+                                    </svg>
+                                    {% elif sample.icon_key == "technical" %}
+                                    <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                                        <path d="M8 8l-4 4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M16 8l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M13.5 5.5l-3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                    {% else %}
+                                    <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                                        <path d="M6 8.5h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M6 12h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M6 15.5h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M18.5 17.5A2.5 2.5 0 1 0 18.5 12.5A2.5 2.5 0 1 0 18.5 17.5Z" stroke="currentColor" stroke-width="1.6"/>
+                                        <path d="M4.5 5.5h15v13H4.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                                    </svg>
+                                    {% endif %}
+                                </span>
+                                <span class="sample-card-meta">{{ sample.document_count }} documents</span>
+                                <span class="analysis-card-copy">
+                                    <strong>{{ sample.title }}</strong>
+                                    <span>{{ sample.description }}</span>
+                                </span>
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="status status-error is-hidden" id="sample-error">
+                            <strong>Sample issue.</strong>
+                            <span></span>
+                        </div>
+                    </section>
+
+                    <div class="upload-choice-divider" aria-hidden="true">
+                        <span>or</span>
+                    </div>
+
+                    <section class="upload-form-stage">
+                        <div class="section-intro section-intro-centered">
+                            <p class="upload-context">Analyze your documents</p>
+                            <h2>Analyze your documents</h2>
+                            <p class="section-description">Check your documents for quality issues before indexing.</p>
+                        </div>
+
+                        <form
+                            class="upload-form upload-form-compact"
+                            action="{{ upload_action or '/report/preview' }}"
+                            method="post"
+                            enctype="multipart/form-data"
+                            id="upload-form"
+                            data-stream-start-url="/report/analyze/stream"
+                        >
+                        <div class="analysis-card-grid analysis-card-grid-compact" role="radiogroup" aria-label="Analysis type">
+                            <label class="analysis-card analysis-card-compact is-selected" data-analysis-card>
+                                <input type="radio" name="analysis_type" value="full_audit" checked>
+                                <span class="analysis-card-copy">
+                                    <strong>Analyze documents</strong>
+                                    <span>Check for duplicates, contradictions, outdated content, and quality issues.</span>
+                                </span>
+                            </label>
+                            <label class="analysis-card analysis-card-compact" data-analysis-card>
+                                <input type="radio" name="analysis_type" value="pre_index_check">
+                                <span class="analysis-card-copy">
+                                    <strong>Compare against existing index</strong>
+                                    <span>Check new documents against content already in your search index before adding them.</span>
+                                </span>
+                            </label>
+                        </div>
+
+                        <div class="field-block field-block-wide">
+                            <label class="dropzone dropzone-primary dropzone-primary-tight" for="documents" id="documents-dropzone">
+                                <input id="documents" name="documents" type="file" accept=".pdf,.docx,.md,.markdown,.txt" multiple>
+                                <span class="dropzone-count-badge document-count-safe" id="documents-count">0/50</span>
+                                <div class="dropzone-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                                        <path d="M12 16V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <path d="M8 9l4-4 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M5 18.5h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <div class="dropzone-body">
+                                    <span class="dropzone-title">Drop documents here or browse</span>
+                                    <span class="dropzone-copy">PDF, DOCX, Markdown, and TXT</span>
+                                    <span class="dropzone-meta">Upload up to 50 documents (10MB max per file).</span>
+                                </div>
+                            </label>
+                            <p class="selection-line" id="documents-selection">No documents selected.</p>
+                            <div class="status status-error is-hidden field-status" id="documents-error">
+                                <strong>Documents issue.</strong>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <div class="field-block collapsible-block is-collapsed" id="existing-index-block" hidden aria-hidden="true">
+                            <label class="field-label" for="chunks_export">Your existing index (optional)</label>
+                            <p class="field-help field-help-spaced">Upload a JSON or CSV export from your vector database.</p>
+                            <label class="dropzone dropzone-secondary dropzone-secondary-tight" for="chunks_export" id="chunks-dropzone">
+                                <input id="chunks_export" name="chunks_export" type="file" accept=".json,.csv" disabled>
+                                <div class="dropzone-icon dropzone-icon-small" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                                        <path d="M7 8.5h10M7 12h10M7 15.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        <rect x="4.5" y="4.5" width="15" height="15" rx="2.5" stroke="currentColor" stroke-width="1.5"/>
+                                    </svg>
+                                </div>
+                                <div class="dropzone-body">
+                                    <span class="dropzone-title">Upload your existing index</span>
+                                    <span class="dropzone-copy">Upload a JSON or CSV export from your vector database.</span>
+                                </div>
+                            </label>
+                            <p class="selection-line" id="chunks-selection">No existing index file selected.</p>
+                            <div class="status status-error is-hidden field-status" id="chunks-error">
+                                <strong>Existing index issue.</strong>
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <details class="advanced-panel advanced-panel-compact">
+                            <summary class="advanced-toggle">
+                                <span>Advanced settings</span>
+                                <small>Optional</small>
+                            </summary>
+                            <div class="advanced-body">
+                                <div class="field-grid config-grid">
+                                    <div class="field-block">
+                                        <label class="field-label" for="chunk_size">Segment size</label>
+                                        <input id="chunk_size" name="chunk_size" type="number" min="50" step="10" value="{{ chunk_size or 500 }}">
+                                        <p class="field-help">Controls how documents are split into text segments.</p>
+                                    </div>
+                                    <div class="field-block">
+                                        <label class="field-label" for="chunk_overlap">Overlap</label>
+                                        <input id="chunk_overlap" name="chunk_overlap" type="number" min="0" step="10" value="{{ chunk_overlap or 50 }}">
+                                        <p class="field-help">Keeps some shared text between neighboring segments.</p>
+                                    </div>
+                                    <div class="field-block field-block-wide">
+                                        <label class="field-label" for="metadata_fields">Expected metadata fields</label>
+                                        <textarea id="metadata_fields" name="metadata_fields" rows="3" placeholder="title, author, date modified">{{ metadata_fields_input or "title, author, date modified" }}</textarea>
+                                        <p class="field-help">Add the document details you expect to be present, such as owner, version, or case number.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+
+                        <input id="client_modified_map" name="client_modified_map" type="hidden" value="{}">
+
+                        <button class="button-primary button-cta button-block" id="analyze-button" type="submit" disabled>Analyze</button>
+                        <p class="selection-line analyze-estimate" id="processing-estimate">Estimated processing time: add documents to estimate.</p>
+                        <div class="status status-error is-hidden field-status" id="form-error">
+                            <strong>Analysis issue.</strong>
+                            <span></span>
+                        </div>
+
+                        <div class="status status-info key-prompt is-hidden" id="api-key-prompt">
+                            <div>
+                                <strong>Add your OpenAI API key in settings to run the full analysis.</strong>
+                                <span>Use the gear icon in the top-right corner. You only need to do this once for the current browser session.</span>
+                            </div>
+                            <div class="inline-actions">
+                                <button class="button-secondary" id="open-settings-from-prompt" type="button">Open settings</button>
+                                <button class="button-primary" id="continue-without-key" type="button">Continue without key</button>
+                            </div>
+                        </div>
+
+                        {% if error %}
+                        <div class="status status-error">
+                            <strong>Upload failed.</strong>
+                            <span>{{ error }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if message %}
+                        <div class="status status-info">
+                            <strong>Note.</strong>
+                            <span>{{ message }}</span>
+                        </div>
+                        {% endif %}
+                        </form>
+                    </section>
+                </div>
+            </section>
+
+            <section class="tool-stage progress-stage is-hidden" id="progress-panel" aria-live="polite">
+                <div class="progress-shell">
+                    <p class="upload-context">Check your documents for quality issues before indexing.</p>
+                    <div class="progress-header">
+                        <h1>Analyzing your documents</h1>
+                        <p class="record-subtitle">RAGLint keeps this view updated as each step completes.</p>
+                        <p class="selection-line selection-line-emphasis" id="progress-elapsed">Elapsed: 0:00</p>
+                    </div>
+                    <div class="progress-stack">
+                        {% for step_key, step_label in [
+                            ("parsing_documents", "Parsing documents"),
+                            ("analyzing_text_segments", "Analyzing text segments"),
+                            ("checking_duplicates", "Checking for duplicates"),
+                            ("detecting_outdated_content", "Detecting outdated content"),
+                            ("scanning_contradictions", "Scanning for contradictions"),
+                            ("auditing_document_information", "Checking document information"),
+                            ("classifying_content_quality", "Evaluating content quality"),
+                            ("generating_report", "Generating report"),
+                        ] %}
+                        <article class="progress-row" data-step-key="{{ step_key }}">
+                            <div class="progress-icon status-pending" aria-hidden="true"></div>
+                            <div class="progress-copy">
+                                <strong>{{ step_label }}</strong>
+                                <span></span>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    <div class="status status-error is-hidden" id="progress-error">
+                        <strong>Analysis stopped.</strong>
+                        <span></span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-backdrop is-hidden" id="modal-backdrop"></div>
+    <section class="settings-modal is-hidden" id="api-key-modal" role="dialog" aria-modal="true" aria-labelledby="api-key-title">
+        <div class="settings-modal-header">
+            <div>
+                <p class="eyebrow">Settings</p>
+                <h2 id="api-key-title">OpenAI API key</h2>
+                <p class="settings-copy">Save your key once for this browser session so duplicate and contradiction checks can run automatically.</p>
+            </div>
+            <button class="icon-button icon-button-small" id="close-settings-button" type="button" aria-label="Close settings">
+                <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                    <path d="M6 6l12 12M18 6l-12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <form class="settings-form" id="api-key-form" data-api-key-action="{{ api_key_action or '/report/api-key' }}">
+            <div class="field-block">
+                <label class="field-label" for="settings-openai-api-key">OpenAI API key</label>
+                <div class="input-shell">
+                    <span class="input-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" role="presentation">
+                            <rect x="5.5" y="10" width="13" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                            <path d="M8.5 10V8a3.5 3.5 0 0 1 7 0v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <input id="settings-openai-api-key" name="openai_api_key" type="password" autocomplete="off" placeholder="sk-...">
+                </div>
+                <p class="field-help">The key is kept in memory only. Closing the browser clears it.</p>
+            </div>
+            <div class="settings-actions">
+                <button class="button-secondary" id="clear-api-key" type="button">Clear key</button>
+                <button class="button-primary" type="submit">Save key</button>
+            </div>
+        </form>
+    </section>
+
+    <script>
+        const bindDropzone = (inputId, zoneId, labelId, emptyText) => {
+            const input = document.getElementById(inputId);
+            const zone = document.getElementById(zoneId);
+            const label = document.getElementById(labelId);
+            if (!input || !zone || !label) {
+                return;
+            }
+
+            const updateLabel = () => {
+                const files = Array.from(input.files || []);
+                label.textContent = files.length ? files.map((file) => file.name).join(", ") : emptyText;
+                const currentModifiedMapInput = document.getElementById("client_modified_map");
+                if (inputId === "documents" && currentModifiedMapInput) {
+                    const modifiedMap = {};
+                    files.forEach((file) => {
+                        if (typeof file.lastModified === "number") {
+                            modifiedMap[file.name] = new Date(file.lastModified).toISOString();
+                        }
+                    });
+                    currentModifiedMapInput.value = JSON.stringify(modifiedMap);
+                }
+            };
+
+            zone.addEventListener("dragover", (event) => {
+                event.preventDefault();
+                zone.classList.add("dropzone-active");
+            });
+            zone.addEventListener("dragleave", () => zone.classList.remove("dropzone-active"));
+            zone.addEventListener("drop", (event) => {
+                event.preventDefault();
+                zone.classList.remove("dropzone-active");
+                if (!event.dataTransfer || !event.dataTransfer.files || input.disabled) {
+                    return;
+                }
+                input.files = event.dataTransfer.files;
+                updateLabel();
+                refreshValidationState();
+            });
+
+            input.addEventListener("change", () => {
+                updateLabel();
+                refreshValidationState();
+            });
+            updateLabel();
+        };
+
+        bindDropzone("documents", "documents-dropzone", "documents-selection", "No documents selected.");
+        bindDropzone("chunks_export", "chunks-dropzone", "chunks-selection", "No existing index file selected.");
+
+        const uploadForm = document.getElementById("upload-form");
+        const documentsInput = document.getElementById("documents");
+        const chunksInput = document.getElementById("chunks_export");
+        const analyzeButton = document.getElementById("analyze-button");
+        const existingIndexBlock = document.getElementById("existing-index-block");
+        const analysisCards = Array.from(document.querySelectorAll("[data-analysis-card]"));
+        const settingsButton = document.getElementById("settings-button");
+        const closeSettingsButton = document.getElementById("close-settings-button");
+        const settingsModal = document.getElementById("api-key-modal");
+        const modalBackdrop = document.getElementById("modal-backdrop");
+        const apiKeyForm = document.getElementById("api-key-form");
+        const settingsApiKeyInput = document.getElementById("settings-openai-api-key");
+        const clearApiKeyButton = document.getElementById("clear-api-key");
+        const openSettingsFromPrompt = document.getElementById("open-settings-from-prompt");
+        const continueWithoutKeyButton = document.getElementById("continue-without-key");
+        const apiKeyPrompt = document.getElementById("api-key-prompt");
+        const uploadWorkbench = document.getElementById("upload-workbench");
+        const progressPanel = document.getElementById("progress-panel");
+        const progressError = document.getElementById("progress-error");
+        const progressRows = Array.from(document.querySelectorAll("[data-step-key]"));
+        const sampleTriggers = Array.from(document.querySelectorAll("[data-sample-trigger]"));
+        const sampleError = document.getElementById("sample-error");
+        const documentsSelection = document.getElementById("documents-selection");
+        const documentsCount = document.getElementById("documents-count");
+        const processingEstimate = document.getElementById("processing-estimate");
+        const chunksSelection = document.getElementById("chunks-selection");
+        const documentsError = document.getElementById("documents-error");
+        const chunksError = document.getElementById("chunks-error");
+        const formError = document.getElementById("form-error");
+        const progressElapsed = document.getElementById("progress-elapsed");
+
+        const MAX_DOCUMENTS = 50;
+        const MAX_FILE_BYTES = 10 * 1024 * 1024;
+        const MAX_TOTAL_UPLOAD_BYTES = 50 * 1024 * 1024;
+        const DOCUMENT_EXTENSIONS = [".pdf", ".docx", ".md", ".markdown", ".txt"];
+        const CHUNKS_EXTENSIONS = [".json", ".csv"];
+        const ACTIVE_ANALYSIS_KEY = "raglint-active-analysis";
+
+        let apiKeyConfigured = {{ "true" if api_key_configured else "false" }};
+        let allowSubmitWithoutKey = false;
+        let submitAttempted = false;
+        let existingIndexCollapseTimer = null;
+        let activeEventSource = null;
+        let activeStatusPoll = null;
+        let elapsedTimer = null;
+
+        const parseFileExtension = (filename) => {
+            const index = filename.lastIndexOf(".");
+            return index >= 0 ? filename.slice(index).toLowerCase() : "";
+        };
+
+        const showInlineStatus = (element, message) => {
+            if (!element) {
+                return;
+            }
+            element.classList.toggle("is-hidden", !message);
+            const content = element.querySelector("span");
+            if (content) {
+                content.textContent = message || "";
+            }
+        };
+
+        const clearInlineStatuses = () => {
+            showInlineStatus(documentsError, "");
+            showInlineStatus(chunksError, "");
+            showInlineStatus(formError, "");
+        };
+
+        const showSampleStatus = (message) => {
+            showInlineStatus(sampleError, message);
+        };
+
+        const clearProgressConnections = () => {
+            if (activeEventSource) {
+                activeEventSource.close();
+                activeEventSource = null;
+            }
+            if (activeStatusPoll) {
+                window.clearTimeout(activeStatusPoll);
+                activeStatusPoll = null;
+            }
+        };
+
+        const stopElapsedTimer = () => {
+            if (elapsedTimer) {
+                window.clearInterval(elapsedTimer);
+                elapsedTimer = null;
+            }
+        };
+
+        const persistActiveAnalysis = (payload) => {
+            window.sessionStorage.setItem(ACTIVE_ANALYSIS_KEY, JSON.stringify(payload));
+        };
+
+        const readActiveAnalysis = () => {
+            try {
+                return JSON.parse(window.sessionStorage.getItem(ACTIVE_ANALYSIS_KEY) || "null");
+            } catch (error) {
+                return null;
+            }
+        };
+
+        const clearActiveAnalysis = () => {
+            clearProgressConnections();
+            stopElapsedTimer();
+            window.sessionStorage.removeItem(ACTIVE_ANALYSIS_KEY);
+        };
+
+        const formatRoundedEstimate = (seconds) => {
+            if (seconds < 60) {
+                return "~30 seconds";
+            }
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            if (!remainingSeconds) {
+                return `~${minutes} minute${minutes === 1 ? "" : "s"}`;
+            }
+            return `~${minutes} minute${minutes === 1 ? "" : "s"} ${remainingSeconds} seconds`;
+        };
+
+        const updateSelectionEstimate = () => {
+            const files = Array.from(documentsInput.files || []);
+            const fileCount = files.length;
+            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+            const countClass = fileCount >= MAX_DOCUMENTS
+                ? "document-count-danger"
+                : fileCount >= 40
+                    ? "document-count-warning"
+                    : "document-count-safe";
+            documentsCount.className = `dropzone-count-badge ${countClass}`;
+            documentsCount.textContent = `${fileCount}/50`;
+
+            if (!fileCount) {
+                processingEstimate.textContent = "Estimated processing time: add documents to estimate.";
+                return;
+            }
+
+            const estimatedChunks = Math.max(
+                fileCount * 3,
+                Math.ceil(totalSize / 1800),
+            );
+            const parsingSeconds = fileCount;
+            const embeddingSeconds = Math.ceil(estimatedChunks / 10) * 2;
+            const duplicationSeconds = Math.ceil(estimatedChunks / 100);
+            const stalenessAndMetadataSeconds = 1;
+            const chunkPairs = (estimatedChunks * Math.max(estimatedChunks - 1, 0)) / 2;
+            const contradictionPairs = Math.min(50, Math.ceil(chunkPairs * 0.1));
+            const contradictionSeconds = apiKeyConfigured ? contradictionPairs * 3 : 0;
+            const rotSeconds = 1;
+            const reportSeconds = 1;
+            const rawEstimateSeconds = (
+                parsingSeconds
+                + embeddingSeconds
+                + duplicationSeconds
+                + stalenessAndMetadataSeconds
+                + contradictionSeconds
+                + rotSeconds
+                + reportSeconds
+            );
+            const roundedSeconds = Math.max(30, Math.ceil(rawEstimateSeconds / 30) * 30);
+            let estimateCopy = `Estimated processing time: ${formatRoundedEstimate(roundedSeconds)}`;
+            if (!apiKeyConfigured) {
+                estimateCopy += " (contradiction detection skipped without API key).";
+            }
+            processingEstimate.textContent = estimateCopy;
+        };
+
+        const formatElapsed = (seconds) => {
+            const minutes = Math.floor(seconds / 60);
+            const remainder = seconds % 60;
+            return `${minutes}:${String(remainder).padStart(2, "0")}`;
+        };
+
+        const startElapsedTimer = (startedAt) => {
+            if (!progressElapsed) {
+                return;
+            }
+            const render = () => {
+                const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+                progressElapsed.textContent = `Elapsed: ${formatElapsed(elapsedSeconds)}`;
+            };
+            if (elapsedTimer) {
+                window.clearInterval(elapsedTimer);
+            }
+            render();
+            elapsedTimer = window.setInterval(render, 1000);
+        };
+
+        const setSettingsState = (configured) => {
+            apiKeyConfigured = configured;
+            settingsButton.classList.toggle("is-configured", configured);
+            apiKeyPrompt.classList.add("is-hidden");
+            if (configured) {
+                allowSubmitWithoutKey = false;
+            }
+            updateSelectionEstimate();
+        };
+
+        const openSettings = () => {
+            modalBackdrop.classList.remove("is-hidden");
+            settingsModal.classList.remove("is-hidden");
+            settingsApiKeyInput.focus();
+        };
+
+        const closeSettings = () => {
+            modalBackdrop.classList.add("is-hidden");
+            settingsModal.classList.add("is-hidden");
+            settingsApiKeyInput.value = "";
+        };
+
+        const validateDocuments = () => {
+            const files = Array.from(documentsInput.files || []);
+            if (!files.length) {
+                return {
+                    valid: false,
+                    code: "missing_documents",
+                    message: "Please select at least one document to analyze.",
+                };
+            }
+            if (files.length > MAX_DOCUMENTS) {
+                return {
+                    valid: false,
+                    code: "too_many_documents",
+                    message: `You selected ${files.length} documents. The maximum is 50 per analysis. Please reduce your selection.`,
+                };
+            }
+
+            let totalSize = 0;
+            for (const file of files) {
+                const extension = parseFileExtension(file.name);
+                if (!DOCUMENT_EXTENSIONS.includes(extension)) {
+                    return {
+                        valid: false,
+                        code: "unsupported_document_type",
+                        message: `File ${file.name} is not supported. RAGLint accepts PDF, DOCX, Markdown, and TXT files.`,
+                    };
+                }
+                if (file.size > MAX_FILE_BYTES) {
+                    return {
+                        valid: false,
+                        code: "document_too_large",
+                        message: `File ${file.name} exceeds the 10MB limit.`,
+                    };
+                }
+                totalSize += file.size;
+            }
+            return { valid: true, code: "ok", totalSize };
+        };
+
+        const validateChunks = () => {
+            const files = Array.from(chunksInput.files || []);
+            if (!files.length) {
+                return { valid: true, totalSize: 0 };
+            }
+            const file = files[0];
+            const extension = parseFileExtension(file.name);
+            if (!CHUNKS_EXTENSIONS.includes(extension)) {
+                return {
+                    valid: false,
+                    message: "The chunks export file could not be read. Please ensure it is valid JSON or CSV.",
+                };
+            }
+            if (file.size > MAX_FILE_BYTES) {
+                return {
+                    valid: false,
+                    message: `File ${file.name} exceeds the 10MB limit.`,
+                };
+            }
+            return { valid: true, totalSize: file.size };
+        };
+
+        function refreshValidationState() {
+            clearInlineStatuses();
+            const documentState = validateDocuments();
+            const chunksState = validateChunks();
+            const shouldShowDocumentError = !documentState.valid && (
+                documentState.code !== "missing_documents" || submitAttempted
+            );
+            if (shouldShowDocumentError) {
+                showInlineStatus(documentsError, documentState.message);
+            }
+            if (!chunksState.valid) {
+                showInlineStatus(chunksError, chunksState.message);
+            }
+            const totalSize = (documentState.totalSize || 0) + (chunksState.totalSize || 0);
+            if (documentState.valid && chunksState.valid && totalSize > MAX_TOTAL_UPLOAD_BYTES) {
+                showInlineStatus(formError, "Total upload size exceeds 50MB.");
+            }
+
+            const valid = documentState.valid && chunksState.valid && totalSize <= MAX_TOTAL_UPLOAD_BYTES;
+            if (documentState.valid) {
+                submitAttempted = false;
+            }
+            analyzeButton.disabled = !valid;
+            updateSelectionEstimate();
+            return { valid };
+        }
+
+        const updateAnalysisMode = () => {
+            const selected = document.querySelector('input[name="analysis_type"]:checked');
+            const isCompareMode = selected && selected.value === "pre_index_check";
+
+            analysisCards.forEach((card) => {
+                const input = card.querySelector('input[type="radio"]');
+                card.classList.toggle("is-selected", Boolean(input && input.checked));
+            });
+
+            if (existingIndexCollapseTimer) {
+                window.clearTimeout(existingIndexCollapseTimer);
+                existingIndexCollapseTimer = null;
+            }
+
+            if (isCompareMode) {
+                existingIndexBlock.hidden = false;
+                existingIndexBlock.setAttribute("aria-hidden", "false");
+                window.requestAnimationFrame(() => {
+                    existingIndexBlock.classList.remove("is-collapsed");
+                });
+            } else {
+                existingIndexBlock.classList.add("is-collapsed");
+                existingIndexBlock.setAttribute("aria-hidden", "true");
+                existingIndexCollapseTimer = window.setTimeout(() => {
+                    existingIndexBlock.hidden = true;
+                }, 220);
+            }
+
+            chunksInput.disabled = !isCompareMode;
+            if (!isCompareMode) {
+                chunksInput.value = "";
+                chunksSelection.textContent = "No existing index file selected.";
+            }
+            refreshValidationState();
+        };
+
+        const setProgressState = (stepKey, status, detail) => {
+            const row = progressRows.find((item) => item.dataset.stepKey === stepKey);
+            if (!row) {
+                return;
+            }
+            row.dataset.status = status;
+            row.querySelector(".progress-icon").className = `progress-icon status-${status}`;
+            row.querySelector(".progress-copy span").textContent = typeof detail === "string" ? detail : "";
+        };
+
+        const showProgress = () => {
+            uploadWorkbench.classList.add("is-hidden");
+            progressPanel.classList.remove("is-hidden");
+            progressError.classList.add("is-hidden");
+            progressError.querySelector("span").textContent = "";
+            if (progressElapsed) {
+                progressElapsed.textContent = "Elapsed: 0:00";
+            }
+            progressRows.forEach((row) => {
+                row.dataset.status = "pending";
+                row.querySelector(".progress-icon").className = "progress-icon status-pending";
+                row.querySelector(".progress-copy span").textContent = "";
+            });
+        };
+
+        const showProgressError = (message, clearJob = true) => {
+            clearProgressConnections();
+            stopElapsedTimer();
+            if (clearJob) {
+                window.sessionStorage.removeItem(ACTIVE_ANALYSIS_KEY);
+            }
+            progressError.classList.remove("is-hidden");
+            progressError.querySelector("span").textContent = message;
+        };
+
+        const startStatusPolling = (statusUrl) => {
+            const poll = async () => {
+                try {
+                    const response = await fetch(statusUrl, {
+                        headers: { "Accept": "application/json" },
+                    });
+                    if (!response.ok) {
+                        showProgressError("The analysis could not be resumed. Please try again.");
+                        return;
+                    }
+                    const payload = await response.json();
+                    (payload.steps || []).forEach((step) => {
+                        setProgressState(step.key, step.status, step.detail || "");
+                    });
+                    if (payload.status === "completed" && payload.report_url) {
+                        clearActiveAnalysis();
+                        window.location.href = payload.report_url;
+                        return;
+                    }
+                    if (payload.status === "error") {
+                        showProgressError(payload.error || "The analysis could not complete.");
+                        return;
+                    }
+                    activeStatusPoll = window.setTimeout(poll, 2000);
+                } catch (error) {
+                    showProgressError("The analysis status could not be checked. Please refresh the page.", false);
+                }
+            };
+
+            clearProgressConnections();
+            poll();
+        };
+
+        const connectProgressStream = (job) => {
+            clearProgressConnections();
+            activeEventSource = new EventSource(job.stream_url);
+            let completed = false;
+
+            activeEventSource.addEventListener("snapshot", (event) => {
+                const payload = JSON.parse(event.data);
+                (payload.steps || []).forEach((step) => {
+                    setProgressState(step.key, step.status, step.detail || "");
+                });
+                if (payload.status === "completed" && payload.report_url) {
+                    completed = true;
+                    clearActiveAnalysis();
+                    window.location.href = payload.report_url;
+                }
+                if (payload.status === "error") {
+                    completed = true;
+                    showProgressError(payload.error || "The analysis could not complete.");
+                }
+            });
+
+            activeEventSource.addEventListener("step", (event) => {
+                const payload = JSON.parse(event.data);
+                setProgressState(payload.key, payload.status, payload.detail || "");
+            });
+
+            activeEventSource.addEventListener("complete", (event) => {
+                const payload = JSON.parse(event.data);
+                completed = true;
+                clearActiveAnalysis();
+                window.location.href = payload.report_url;
+            });
+
+            activeEventSource.addEventListener("job-error", (event) => {
+                const payload = JSON.parse(event.data);
+                completed = true;
+                showProgressError(payload.message || "The analysis could not complete.");
+            });
+
+            activeEventSource.onerror = () => {
+                if (!completed) {
+                    clearProgressConnections();
+                    startStatusPolling(job.status_url);
+                }
+            };
+        };
+
+        const beginAnalysisJob = (payload) => {
+            const startedAt = Date.now();
+            const activeJob = {
+                job_id: payload.job_id,
+                stream_url: payload.stream_url,
+                status_url: payload.status_url,
+                report_url: payload.report_url,
+                started_at: startedAt,
+            };
+            persistActiveAnalysis(activeJob);
+            showProgress();
+            startElapsedTimer(startedAt);
+            connectProgressStream(activeJob);
+        };
+
+        settingsButton.addEventListener("click", openSettings);
+        closeSettingsButton.addEventListener("click", closeSettings);
+        modalBackdrop.addEventListener("click", closeSettings);
+        openSettingsFromPrompt.addEventListener("click", openSettings);
+        continueWithoutKeyButton.addEventListener("click", () => {
+            allowSubmitWithoutKey = true;
+            apiKeyPrompt.classList.add("is-hidden");
+            uploadForm.requestSubmit();
+        });
+
+        apiKeyForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            showInlineStatus(formError, "");
+            try {
+                const response = await fetch(apiKeyForm.dataset.apiKeyAction, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({ openai_api_key: settingsApiKeyInput.value }),
+                });
+                if (!response.ok) {
+                    showInlineStatus(formError, "The API key could not be saved. Please try again.");
+                    return;
+                }
+                const payload = await response.json();
+                setSettingsState(Boolean(payload.configured));
+                closeSettings();
+            } catch (error) {
+                showInlineStatus(formError, "The API key could not be saved. Please try again.");
+            }
+        });
+
+        clearApiKeyButton.addEventListener("click", async () => {
+            showInlineStatus(formError, "");
+            try {
+                const response = await fetch(apiKeyForm.dataset.apiKeyAction, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    body: JSON.stringify({ openai_api_key: "" }),
+                });
+                if (!response.ok) {
+                    showInlineStatus(formError, "The API key could not be cleared. Please try again.");
+                    return;
+                }
+                const payload = await response.json();
+                setSettingsState(Boolean(payload.configured));
+                closeSettings();
+            } catch (error) {
+                showInlineStatus(formError, "The API key could not be cleared. Please try again.");
+            }
+        });
+
+        analysisCards.forEach((card) => {
+            const input = card.querySelector('input[type="radio"]');
+            if (!input) {
+                return;
+            }
+            input.addEventListener("change", updateAnalysisMode);
+            card.addEventListener("click", () => {
+                input.checked = true;
+                updateAnalysisMode();
+            });
+        });
+
+        sampleTriggers.forEach((trigger) => {
+            trigger.addEventListener("click", async () => {
+                showSampleStatus("");
+                clearInlineStatuses();
+                sampleTriggers.forEach((item) => {
+                    item.disabled = true;
+                });
+                try {
+                    const response = await fetch(trigger.dataset.sampleStartUrl, {
+                        method: "POST",
+                        headers: { "Accept": "application/json" },
+                    });
+                    if (!response.ok) {
+                        let message = "The sample analysis could not be started.";
+                        try {
+                            const payload = await response.json();
+                            if (payload.detail) {
+                                message = payload.detail;
+                            }
+                        } catch (error) {
+                            // Keep the default startup message.
+                        }
+                        showSampleStatus(message);
+                        sampleTriggers.forEach((item) => {
+                            item.disabled = false;
+                        });
+                        return;
+                    }
+                    const payload = await response.json();
+                    beginAnalysisJob(payload);
+                } catch (error) {
+                    showSampleStatus("The sample analysis could not be started. Please try again.");
+                    sampleTriggers.forEach((item) => {
+                        item.disabled = false;
+                    });
+                }
+            });
+        });
+
+        updateAnalysisMode();
+        setSettingsState(apiKeyConfigured);
+        refreshValidationState();
+
+        const resumeActiveAnalysis = () => {
+            const activeJob = readActiveAnalysis();
+            if (!activeJob || !activeJob.stream_url || !activeJob.status_url) {
+                return;
+            }
+            showProgress();
+            startElapsedTimer(activeJob.started_at || Date.now());
+            connectProgressStream(activeJob);
+        };
+
+        resumeActiveAnalysis();
+
+        uploadForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            clearInlineStatuses();
+            submitAttempted = true;
+            if (!refreshValidationState().valid) {
+                return;
+            }
+            if (!apiKeyConfigured && !allowSubmitWithoutKey) {
+                apiKeyPrompt.classList.remove("is-hidden");
+                apiKeyPrompt.scrollIntoView({ behavior: "smooth", block: "center" });
+                return;
+            }
+
+            analyzeButton.disabled = true;
+            try {
+                const response = await fetch(uploadForm.dataset.streamStartUrl, {
+                    method: "POST",
+                    body: new FormData(uploadForm),
+                    headers: { "Accept": "application/json" },
+                });
+                if (!response.ok) {
+                    let message = "The analysis could not be started. Please check your files and try again.";
+                    try {
+                        const payload = await response.json();
+                        if (payload.detail) {
+                            message = payload.detail;
+                        }
+                    } catch (error) {
+                        // Keep the default startup message.
+                    }
+                    showInlineStatus(formError, message);
+                    analyzeButton.disabled = false;
+                    return;
+                }
+                const payload = await response.json();
+                beginAnalysisJob(payload);
+            } catch (error) {
+                showInlineStatus(formError, "The analysis could not be started. Please check your connection and try again.");
+                analyzeButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

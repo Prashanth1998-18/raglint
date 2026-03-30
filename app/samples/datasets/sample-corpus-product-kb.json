@@ -1,0 +1,57 @@
+[
+  {
+    "filename": "pricing-overview.md",
+    "title": "Pricing Overview",
+    "text": "# BrightDesk Pricing\n\nBrightDesk offers three plans to fit your team's needs.\n\n## Starter Plan\n$12 per user per month (billed annually) or $15 per user per month (billed monthly). Includes up to 5 team members, 1,000 tickets per month, email support, and basic reporting.\n\n## Professional Plan\n$29 per user per month (billed annually) or $35 per user per month (billed monthly). Includes unlimited team members, unlimited tickets, priority support, advanced reporting, and API access.\n\n## Enterprise Plan\nCustom pricing. Includes everything in Professional plus SSO, dedicated account manager, custom integrations, SLA guarantees, and on-premise deployment option.\n\nAll plans include a 14-day free trial. No credit card required."
+  },
+  {
+    "filename": "sales-one-pager.md",
+    "title": "Sales One-Pager",
+    "text": "# BrightDesk for Your Team\n\nBrightDesk is the #1 customer support platform for growing teams.\n\n## Why BrightDesk?\n\nFaster response times. Happier customers. Less busywork.\n\n## Plans\n\nStarter: $15/user/month. Up to 10 users, 2,000 tickets/month, email support.\n\nProfessional: $35/user/month. Unlimited users and tickets, phone and email support, analytics dashboard.\n\nEnterprise: Contact sales. Everything in Pro plus SSO, dedicated CSM, and custom SLAs.\n\n## Customers Love Us\n\n4.8 stars on G2. Trusted by 5,000+ companies worldwide.\n\n## Get Started\n\nBook a demo at brightdesk.com/demo or start your free trial today."
+  },
+  {
+    "filename": "feature-list.md",
+    "title": "Feature List",
+    "text": "# BrightDesk Features\n\n## Ticket Management\nMulti-channel inbox (email, chat, social media). Automatic ticket routing and prioritization. Custom ticket fields and workflows. SLA tracking and alerts.\n\n## Knowledge Base\nPublic-facing help center. Internal knowledge base for agents. AI-powered article suggestions. Full-text search with filters.\n\n## Reporting\nReal-time dashboard with key metrics. Custom report builder. Scheduled report delivery via email. Export to CSV and PDF.\n\n## Integrations\nSlack, Jira, Salesforce, HubSpot, Zapier. REST API for custom integrations. Webhook support for real-time events.\n\n## Security\nSOC2 Type II certified. GDPR compliant. Two-factor authentication. Role-based access control. Data encryption at rest and in transit."
+  },
+  {
+    "filename": "feature-comparison.md",
+    "title": "Feature Comparison by Plan",
+    "text": "# Feature Comparison\n\n## Starter\nEmail inbox only. Basic ticket routing. Up to 5 custom fields. Standard reports. Email support (48-hour response time).\n\n## Professional\nMulti-channel inbox (email, chat, social). Advanced routing with AI. Unlimited custom fields. Custom report builder. Priority support (4-hour response time). API access. Slack and Jira integrations.\n\n## Enterprise\nEverything in Professional. SSO (SAML/OAuth). Dedicated account manager. Custom integrations. 99.9% uptime SLA. On-premise deployment. Phone support (1-hour response time). Audit logs."
+  },
+  {
+    "filename": "setup-guide.md",
+    "title": "Setup Guide",
+    "text": "# Getting Started with BrightDesk\n\n## Step 1: Create Your Account\nSign up at brightdesk.com/signup. You'll need a work email address. All new accounts start with a 14-day free trial of the Professional plan.\n\n## Step 2: Invite Your Team\nGo to Settings > Team > Invite Members. Enter email addresses for your team. They'll receive an invitation to join your workspace.\n\n## Step 3: Connect Your Email\nGo to Settings > Channels > Email. Add your support email address (e.g., support@yourcompany.com). BrightDesk will automatically import incoming emails as tickets.\n\n## Step 4: Customize Your Workflow\nSet up ticket categories, priorities, and assignment rules. Configure your SLA policies. Customize your ticket form fields.\n\n## Step 5: Go Live\nUpdate your support email forwarding to point to BrightDesk. Publish your knowledge base. Share your new help center URL with customers."
+  },
+  {
+    "filename": "onboarding-guide.md",
+    "title": "Onboarding Guide",
+    "text": "# BrightDesk Onboarding\n\n## Create Your Account\nVisit brightdesk.com/signup and register with your work email. New accounts get a 14-day free trial of the Professional plan with full access to all features.\n\n## Add Team Members\nNavigate to Settings > Team > Invite Members. Add your team by entering their email addresses. Each person will get an email invitation to join.\n\n## Set Up Email Channel\nIn Settings > Channels > Email, add your support address (like support@yourcompany.com). Incoming emails will automatically create tickets in your inbox.\n\n## Configure Workflows\nCustomize ticket categories, set priority levels, and create auto-assignment rules. Define SLA policies for different ticket types. Add custom fields to your ticket form.\n\n## Launch\nForward your support email to BrightDesk. Publish your help center. Share the help center link with your customers."
+  },
+  {
+    "filename": "faq.md",
+    "title": "Frequently Asked Questions",
+    "text": "# FAQ\n\n## How much does BrightDesk cost?\nOur Starter plan begins at $12/user/month when billed annually. The Professional plan is $29/user/month annually. Enterprise pricing is custom. All plans include a 14-day free trial.\n\n## Can I change plans later?\nYes, you can upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.\n\n## What payment methods do you accept?\nWe accept all major credit cards (Visa, Mastercard, Amex) and invoicing for annual Enterprise contracts.\n\n## Is there a free trial?\nYes, all plans come with a 14-day free trial. No credit card required to start.\n\n## How many users can I have?\nStarter supports up to 5 users. Professional and Enterprise have no user limit.\n\n## Do you offer phone support?\nPhone support is available on Enterprise plans only. Starter and Professional plans include email and chat support."
+  },
+  {
+    "filename": "help-article-sla.md",
+    "title": "Setting Up SLA Policies",
+    "text": "# How to Set Up SLA Policies\n\nSLA (Service Level Agreement) policies help you track and meet response time commitments.\n\n## Creating an SLA Policy\n\n1. Go to Settings > SLAs > New Policy\n2. Name your policy (e.g., 'Premium Support SLA')\n3. Set response time targets for each priority level:\n   - Urgent: 1 hour first response\n   - High: 4 hours first response\n   - Normal: 8 hours first response\n   - Low: 24 hours first response\n4. Set resolution time targets\n5. Choose which tickets this policy applies to (by tag, customer tier, or channel)\n\n## SLA Alerts\n\nBrightDesk automatically alerts agents when an SLA is approaching breach. Alerts are sent 15 minutes before the deadline via email and in-app notification.\n\n## SLA Reporting\n\nTrack SLA compliance in Settings > Reports > SLA Dashboard. See breach rates by team, agent, priority, and time period."
+  },
+  {
+    "filename": "release-notes-2024.md",
+    "title": "Release Notes 2024",
+    "text": "# Release Notes 2024\n\n## December 2024\n- Added AI-powered ticket summarization\n- New Salesforce integration\n- Bug fix: SLA timer pausing on weekends\n\n## September 2024\n- Launched chat widget for websites\n- Added social media inbox (Twitter, Facebook)\n- New: Custom report builder\n\n## June 2024\n- Added two-factor authentication\n- New: Scheduled report delivery\n- Improved search performance by 40%\n\n## March 2024\n- Launched knowledge base with AI article suggestions\n- Added webhook support\n- New: Ticket merge functionality"
+  },
+  {
+    "filename": "internal-roadmap-notes.md",
+    "title": "Internal Roadmap Notes",
+    "text": "# Product Roadmap Discussion\n\nDate: Q2 2024\n\nThings we might build:\n- Maybe AI auto-responses?\n- Phone system integration (research needed)\n- Mobile app (no timeline)\n\nNotes:\n- Need to check with legal on AI features\n- Budget TBD for Q3\n- Placeholder for competitive analysis\n\nAction items: none assigned yet\nFollow-up: TBD"
+  },
+  {
+    "filename": "deprecated-api-docs.md",
+    "title": "API Documentation (v1)",
+    "text": "# BrightDesk API v1 (Deprecated)\n\nNote: API v1 was deprecated in January 2024. Please use API v2.\n\nBase URL: https://api.brightdesk.com/v1\n\nAuthentication: Basic auth with your API key.\n\n## Endpoints\n\nGET /tickets - List tickets (max 50 per page)\nPOST /tickets - Create a ticket\nGET /tickets/:id - Get a ticket\nPUT /tickets/:id - Update a ticket\n\nRate limit: 60 requests per minute.\n\nFor API v2 documentation, see docs.brightdesk.com/api/v2."
+  }
+]

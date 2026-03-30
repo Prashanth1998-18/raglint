@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAGLint | Error</title>
+    <link rel="icon" type="image/svg+xml" href="/static/raglint-favicon.svg">
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}">
+</head>
+<body class="shell shell-app">
+    <div class="app-frame">
+        <header class="topbar">
+            <a class="brand-link" href="{{ retry_url or '/' }}" aria-label="Return to upload page">
+                <img class="brand-logo" src="{{ url_for('static', path='raglint-logo.svg') }}" alt="RAGLint">
+            </a>
+        </header>
+
+        <main class="page page-upload page-upload-focused">
+            <section class="tool-stage">
+                <div class="upload-shell">
+                    <p class="upload-context">RAG readiness analysis</p>
+                    <section class="panel report-panel">
+                        <div class="panel-header section-header">
+                            <div>
+                                <h1>{{ title or "Something went wrong" }}</h1>
+                                <p class="record-subtitle">{{ message }}</p>
+                            </div>
+                        </div>
+                        <div class="inline-actions">
+                            <a class="button-primary" href="{{ retry_url or '/' }}">Try again</a>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

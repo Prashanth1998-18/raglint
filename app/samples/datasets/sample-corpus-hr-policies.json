@@ -1,0 +1,47 @@
+[
+  {
+    "filename": "travel-policy.md",
+    "title": "Travel Policy",
+    "text": "# Company Travel Policy\n\nAll domestic travel must be pre-approved by your direct manager at least 5 business days before departure.\n\n## Hotel Reimbursement\n\nEmployees are reimbursed up to $75 per night for hotel stays during domestic travel. International travel allows up to $150 per night. Receipts are required for all hotel expenses.\n\n## Flights\n\nAll flights should be booked through ConcurTravel. Economy class only for flights under 6 hours. Business class requires VP-level approval for flights over 6 hours.\n\n## Meals\n\nDaily meal allowance is $50 for domestic travel and $75 for international travel. Alcohol is not reimbursable."
+  },
+  {
+    "filename": "expense-guidelines.md",
+    "title": "Expense Guidelines",
+    "text": "# Expense Guidelines for Employees\n\n## Travel Expenses\n\nDomestic travel requires manager approval prior to booking. Use Concur for all flight bookings. Economy class is required for flights shorter than 6 hours.\n\nThe per-night hotel allowance for domestic travel is $100, receipts required. International hotel stays are capped at $200 per night.\n\n## Meal Expenses\n\nDaily meal allowance is $60 for domestic travel. International meal allowance is $75. All meals must be documented with itemized receipts.\n\n## Expense Submission\n\nAll expense reports must be submitted within 14 days of travel completion through the Concur platform."
+  },
+  {
+    "filename": "security-policy-2021.md",
+    "title": "Security Policy",
+    "text": "# Security Policy\n\nLast updated: March 15, 2021\n\n## Incident Reporting\n\nAll security incidents should be reported to CTO John Doe at john.doe@company.com within 24 hours of discovery.\n\n## Access Control\n\nAs of Q1 2021, all employees must use two-factor authentication for accessing company systems. Our SOC2 certification is maintained through vendor AuditCorp.\n\n## Password Policy\n\nPasswords must be at least 8 characters and changed every 90 days. Password managers are recommended but not required.\n\n## Remote Access\n\nVPN access requires approval from the IT department. Currently, we use CiscoVPN version 4.2 for all remote connections."
+  },
+  {
+    "filename": "travel-policy-old.md",
+    "title": "Travel Policy (Old)",
+    "text": "# Travel Policy\n\nAll domestic travel must be pre-approved by your manager at least 5 days before departure.\n\n## Hotel Reimbursement\n\nEmployees are reimbursed up to $75 per night for hotel stays during domestic travel. International travel allows up to $150 per night. All hotel expenses require receipts.\n\n## Flights\n\nFlights should be booked through ConcurTravel. Economy class is mandatory for flights under 6 hours. Business class needs VP approval for flights over 6 hours.\n\n## Meals\n\nThe daily meal allowance is $50 for domestic and $75 for international travel."
+  },
+  {
+    "filename": "meeting-notes-oct.md",
+    "title": "Team Sync Notes",
+    "text": "# Team Sync Notes\n\nDate: October 12, 2023\n\nAttendees: Sarah, Mike, Priya\n\n## Discussion\n\nGeneral updates. Nothing major.\n\n## Action Items\n\nTBD\n\n## Next Meeting\n\nOctober 19, 2023"
+  },
+  {
+    "filename": "benefits-guide.md",
+    "title": "Employee Benefits Guide",
+    "text": "# Employee Benefits Guide\n\n## Health Insurance\n\nAll full-time employees are eligible for health insurance coverage. Coverage begins on the first day of employment. We offer three plan tiers: Basic, Standard, and Premium.\n\n## Dental Coverage\n\nDental coverage begins after a 90-day waiting period from your start date. Coverage includes preventive care, basic procedures, and major procedures with varying copay levels.\n\n## Vision Coverage\n\nVision coverage is included in all health plan tiers. Annual eye exams and a frames allowance of $200 are included.\n\n## 401k\n\nThe company matches 401k contributions up to 4% of your salary. Vesting is immediate for all employees."
+  },
+  {
+    "filename": "new-hire-faq.md",
+    "title": "New Hire FAQ",
+    "text": "# New Hire FAQ\n\n## When do my benefits start?\n\nAll benefits, including dental, vision, and health insurance, are effective from your first day of employment. No waiting period is required for any benefit.\n\n## How do I enroll?\n\nLog into the HR portal at hr.company.com within your first week. Select your preferred health plan tier and add any dependents.\n\n## What about 401k?\n\nYou can enroll in the 401k program immediately. The company matches up to 4% of your salary with immediate vesting.\n\n## Who do I contact for help?\n\nReach out to the HR team at hr@company.com or visit the HR portal for self-service options."
+  },
+  {
+    "filename": "code-review-guidelines.md",
+    "title": "Code Review Guidelines",
+    "text": "# Code Review Guidelines\n\n## Purpose\n\nCode reviews ensure code quality, share knowledge across the team, and catch bugs before they reach production. Every pull request requires at least one approval before merging.\n\n## Review Expectations\n\nReviewers should provide feedback within 24 hours of being assigned. Focus on correctness, readability, test coverage, and adherence to our style guide. Be constructive and specific in feedback.\n\n## What to Look For\n\nCheck for proper error handling, edge cases, security implications, and performance considerations. Ensure tests cover the new functionality and that documentation is updated if APIs change.\n\n## Approval and Merging\n\nOnce approved, the PR author is responsible for merging. Squash commits for feature branches. Use conventional commit messages."
+  },
+  {
+    "filename": "notes.txt",
+    "title": "Project Notes",
+    "text": "Some notes about the project timeline.\n\nWe need to finish phase 1 by end of month. Phase 2 should start in early Q2. Budget is still TBD. Need to check with finance.\n\nAlso remember to update the wiki page. Currently the wiki has outdated info about the old process.\n\nTODO: schedule meeting with stakeholders."
+  }
+]
